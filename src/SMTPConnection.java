@@ -23,19 +23,24 @@ public class SMTPConnection {
     /* Create an SMTPConnection object. Create the socket and the 
        associated streams. Initialize SMTP connection. */
     public SMTPConnection(Envelope envelope) throws IOException {
-        // connection = /* Fill in */;
-        fromServer = /* Fill in */;
-        toServer =   /* Fill in */;
+        connection = new Socket("localhost", SMTP_PORT)/* Fill in */;
+        fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()))/* Fill in */;
+        toServer =   new DataOutputStream(connection.getOutputStream())/* Fill in */;
 
         /* Fill in */
 	/* Read a line from server and check that the reply code is 220.
 	   If not, throw an IOException. */
         /* Fill in */
+                        //forsøg
+        int reply = parseReply(fromServer.readLine()) ;
+        if(!(reply == 220)){
+            throw new IOException("Reply is not 220");
+        }
 
 	/* SMTP handshake. We need the name of the local machine.
 	   Send the appropriate SMTP handshake command. */
-        String localhost = /* Fill in */;
-        sendCommand( /* Fill in */ );
+        String localhost = "localhost"/* Fill in */;
+        sendCommand( /* Fill in */ "HELO "+localhost, 250 );
 
         isConnected = true;
     }
@@ -56,8 +61,8 @@ public class SMTPConnection {
     public void close() {
         isConnected = false;
         try {
-            sendCommand( /* Fill in */ );
-            // connection.close();
+            sendCommand("QUIT", 221);
+            connection.close();
         } catch (IOException e) {
             System.out.println("Unable to close connection: " + e);
             isConnected = true;
@@ -69,17 +74,24 @@ public class SMTPConnection {
     private void sendCommand(String command, int rc) throws IOException {
         /* Fill in */
         /* Write command to server and read reply from server. */
+        toServer.writeBytes (command+CRLF);
         /* Fill in */
 
         /* Fill in */
 	/* Check that the server's reply code is the same as the parameter
 	   rc. If not, throw an IOException. */
+	    int replyC = parseReply(fromServer.readLine());
+	    if(!(replyC == rc)){
+	        throw new IOException("wrong reply code");
+        }
         /* Fill in */
     }
 
     /* Parse the reply line from the server. Returns the reply code. */
     private int parseReply(String reply) {
         /* Fill in */
+        String code = reply.substring(0,2);
+        return Integer.parseInt(code);
     }
 
     /* Destructor. Closes the connection if something bad happens. */
