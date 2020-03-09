@@ -29,38 +29,19 @@ public class SMTPConnection {
         fileReader.read(bytes);
         fileEncoded = Base64.getEncoder().encodeToString(bytes);
 
+        /*
+        INPUT:
+        Hardcoded email values.
+        Could here have used a scanner for input and system.out.println for output to make a textbased UI asking for user input.
+         */
+        emailFrom = "s171242@student.dtu.com"; /*did not have an assigned TA due to not realizing we had to make groups.
+                                                So just added me (s195471) and my brother in group "newcomers" */
+        emailTo = "jacob1211@hotmail.com";
+        subject = "Hello Jacob im your new TA";
+        textBody.add("Hey Jacob");
+        textBody.add("You forgot to assign yourself to a group.");
 
-        //setting testing to true sends hard coded email with picture
-        //setting testing to false start UI that supports sending mail without picture
-        boolean testing = true;
-
-        if(testing){
-            //Hardcoded email values for testing
-            emailFrom = "whatever@whatever.com";
-            emailTo = "jacob1211@hotmail.com";
-            subject = "java mail";
-            textBody.add("hello from line 1");
-            textBody.add("hello from line 2");
-            textBody.add("hello from line 3");
-
-        }
-        else {
-            //terminal based interface to input values
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Enter your email adress");
-            emailFrom = scanner.nextLine();
-            System.out.println("Enter reciever email adress");
-            emailTo = scanner.nextLine();
-            System.out.println("Enter subject of the mail");
-            subject = scanner.nextLine();
-            System.out.println("Enter text you want to send. End with \"end\" on a single line");
-            textBody.add(scanner.nextLine());
-            while (!textBody.get(textBody.size() - 1).equals("end")) {
-                textBody.add(scanner.nextLine());
-            }
-            scanner.close();
-        }
-
+        //open a connection and use the send method to send an email. Afterwards close it.
         SMTPConnection client = new SMTPConnection();
         client.send(emailFrom, emailTo, subject, fileEncoded, textBody);
         client.close();
@@ -83,9 +64,9 @@ public class SMTPConnection {
     /* Create an SMTPConnection object. Create the socket and the 
        associated streams. Initialize SMTP connection. */
     public SMTPConnection() throws IOException {
-        connection = new Socket("localhost", SMTP_PORT);
-        fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        toServer =   new DataOutputStream(connection.getOutputStream());
+        connection = new Socket("localhost", SMTP_PORT); //using localhost through thinlinc
+        fromServer = new BufferedReader(new InputStreamReader(connection.getInputStream())); //setup reader from server
+        toServer =   new DataOutputStream(connection.getOutputStream());//setup writer to server
 
 
 	/* Read a line from server and check that the reply code is 220.
@@ -123,7 +104,7 @@ public class SMTPConnection {
         sendCommand("--seperator",0);
         sendCommand("",0);
 
-        //text body
+        //text body. Sending each line as command.
         for(String line : text){
             sendCommand(line,0);
         }
@@ -135,7 +116,7 @@ public class SMTPConnection {
         sendCommand("Content-Disposition: attachment; filename=hackerman.jpg",0);
         sendCommand("Content-Transfer-Encoding: base64",0);
         sendCommand("",0);
-        //actual encoding
+        //actual file in base64 encoding
         sendCommand(fileEncoded,0);
 
         //Ending message
@@ -148,7 +129,7 @@ public class SMTPConnection {
     public void close() {
         isConnected = false;
         try {
-            sendCommand("QUIT", 221);
+            sendCommand("QUIT", 221);//telling to stop connection
             connection.close();
         } catch (IOException e) {
             System.out.println("Unable to close connection: " + e);
@@ -159,15 +140,17 @@ public class SMTPConnection {
     /* Send an SMTP command to the server. Check that the reply code is
        what is is supposed to be according to RFC 821. */
     private void sendCommand(String command, int rc) throws IOException {
-        /* Fill in */
-        /* Write command to server and read reply from server. */
+
+        /* Write command to server*/
         toServer.writeBytes (command+CRLF);
 
 	/* Check that the server's reply code is the same as the parameter
 	   rc. If not, throw an IOException. */
-	    if(rc==0){
+
+	if(rc==0){ //used for when we dont expect a reply from server.
 	        return;
         }
+
 	    int replyC = parseReply(fromServer.readLine());
 	    if(!(replyC == rc)){
 	        throw new IOException("wrong reply code");
@@ -176,6 +159,7 @@ public class SMTPConnection {
 
     /* Parse the reply line from the server. Returns the reply code. */
     private int parseReply(String reply) {
+        //splitting the reply by space and going to the first "word" which is always the reply code
         String code = reply.split(" ")[0];
         return Integer.parseInt(code);
     }
