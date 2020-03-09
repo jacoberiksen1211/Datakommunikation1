@@ -8,22 +8,35 @@ import java.util.*;
  */
 public class SMTPConnection {
     public static void main(String[] args) throws IOException{
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Enter your email adress");
-        String emailFrom = scanner.nextLine();
-        System.out.println("Enter reciever email adress");
-        String emailTo = scanner.nextLine();
-        System.out.println("Enter subject of mail");
-        String subject = scanner.nextLine();
-        System.out.println("Enter text you want to send. End with \"end\" on a single line");
+
+        String emailFrom;
+        String emailTo;
         ArrayList<String> text = new ArrayList<>();
-        text.add(scanner.nextLine());
-        while(!text.get(text.size()-1).equals("end")){
+
+        boolean testing = true;
+
+        if(testing){
+            emailFrom = "whatever@whatever.com";
+            emailTo = "jacob1211@hotmail.com";
+
+            text.add("hej linje 1");
+            text.add("hej linje 2");
+        }
+        else {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Enter your email adress");
+            emailFrom = scanner.nextLine();
+            System.out.println("Enter reciever email adress");
+            emailTo = scanner.nextLine();
+            System.out.println("Enter text you want to send. End with \"end\" on a single line");
             text.add(scanner.nextLine());
+            while (!text.get(text.size() - 1).equals("end")) {
+                text.add(scanner.nextLine());
+            }
+            scanner.close();
         }
 
         SMTPConnection client = new SMTPConnection();
-
         client.send(emailFrom, emailTo, text);
         client.close();
     }
@@ -110,6 +123,9 @@ public class SMTPConnection {
         /* Fill in */
 	/* Check that the server's reply code is the same as the parameter
 	   rc. If not, throw an IOException. */
+	    if(rc==0){
+	        return;
+        }
 	    int replyC = parseReply(fromServer.readLine());
 	    if(!(replyC == rc)){
 	        throw new IOException("wrong reply code");
@@ -120,7 +136,7 @@ public class SMTPConnection {
     /* Parse the reply line from the server. Returns the reply code. */
     private int parseReply(String reply) {
         /* Fill in */
-        String code = reply.substring(0,2);
+        String code = reply.split(" ")[0];
         return Integer.parseInt(code);
     }
 
