@@ -127,12 +127,14 @@ public class SMTPConnection {
         for(String line : text){
             sendCommand(line,0);
         }
+        sendCommand("",0);
 
         //specifying the attached picture and its encoding style
         sendCommand("--seperator",0);
         sendCommand("Content-Type:application/octet-stream; name=hackerman.jpg",0);
         sendCommand("Content-Disposition: attachment; filename=hackerman.jpg",0);
         sendCommand("Content-Transfer-Encoding: base64",0);
+        sendCommand("",0);
         //actual encoding
         sendCommand(fileEncoded,0);
 
